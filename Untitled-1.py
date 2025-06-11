@@ -52,7 +52,7 @@ with tab1:
     directions = route_directions.get(route, [])
     direction = st.selectbox("방면 선택", directions)
     if st.button("가까운 버스 찾기"):
-        now_dt = get_now_kst
+        now_dt = get_now_kst()
         next_bus = find_next_bus(route, direction, now_dt)
         if next_bus is None:
             st.warning(f"{route} - {direction} 방향의 남은 버스가 없습니다.")
