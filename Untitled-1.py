@@ -81,7 +81,3 @@ with tab2:
             alarm_notify_dt = alarm_dt - timedelta(minutes=minutes_before)
             st.success(f"{route2} - {direction2} 방향 {time2} 버스 알람을 {minutes_before}분 전에 설정했습니다.")
             st.info(f"알람 시간: {alarm_notify_dt.strftime('%Y-%m-%d %H:%M')}")
-git add .
-git commit -m "fix: 시간 비교 버그 수정"
-git push
-
