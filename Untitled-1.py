@@ -16,12 +16,12 @@ for route in df['노선명'].unique():
 def combine_datetime(time_obj, now=None):
     if now is None:
         now = dt.datetime.now()
+
     base_date = now.date()
     combined = dt.datetime.combine(base_date, time_obj)
-    if time_obj.hour < 5:
+    if combined <= now:
         combined += timedelta(days=1)
-    elif combined <= now:
-        combined += timedelta(days=1)
+
     return combined
 
 def parse_time_str(time_str):
