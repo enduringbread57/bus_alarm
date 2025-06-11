@@ -19,16 +19,17 @@ def get_now_kst():
 
 def combine_datetime(time_obj, now=None):
     if now is None:
-        now = dt.datetime.now()
+        now = dt.datetime.now(pytz.timezone('Asia/Seoul'))
 
     base_date = now.date()
     combined = dt.datetime.combine(base_date, time_obj)
     kst = pytz.timezone('Asia/Seoul')
     combined = kst.localize(combined)
-    if combined < now:
+    if combined <= now:
         combined += timedelta(days=1)
 
     return combined
+
 
 
 def parse_time_str(time_str):
@@ -38,11 +39,15 @@ def find_next_bus(route, direction, now_dt):
     times_str = df[(df['노선명'] == route) & (df['방면'] == direction)]['시간'].tolist()
     times = [parse_time_str(t) for t in times_str]
     times.sort()
-    for t in times:
-        bus_dt = combine_datetime(t, now=now_dt)
+
+    bus_datetimes = [combine_datetime(t, now=now_dt) for t in times]
+    bus_datetimes.sort()
+
+    for bus_dt in bus_datetimes:
         if bus_dt > now_dt:
             return bus_dt
     return None
+
 
 st.title("버스 알람 서비스")
 
