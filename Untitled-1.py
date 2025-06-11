@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import datetime as dt
 from datetime import timedelta
+import pytz
 
 # CSV 불러오기 및 전처리
 csv_path = 'timetable3.csv'
@@ -13,6 +14,9 @@ for route in df['노선명'].unique():
     directions = df[df['노선명'] == route]['방면'].unique().tolist()
     route_directions[route] = directions
 
+def get_now_kst():
+    return dt.datetime.now(pytz.timezone('Asia/Seoul'))
+
 def combine_datetime(time_obj, now=None):
     if now is None:
         now = dt.datetime.now()
@@ -23,6 +27,7 @@ def combine_datetime(time_obj, now=None):
         combined += timedelta(days=1)
 
     return combined
+
 
 def parse_time_str(time_str):
     return dt.datetime.strptime(time_str, '%H:%M').time()
@@ -47,7 +52,7 @@ with tab1:
     directions = route_directions.get(route, [])
     direction = st.selectbox("방면 선택", directions)
     if st.button("가까운 버스 찾기"):
-        now_dt = dt.datetime.now()
+        now_dt = get_now_kst
         next_bus = find_next_bus(route, direction, now_dt)
         if next_bus is None:
             st.warning(f"{route} - {direction} 방향의 남은 버스가 없습니다.")
@@ -81,3 +86,5 @@ with tab2:
             alarm_notify_dt = alarm_dt - timedelta(minutes=minutes_before)
             st.success(f"{route2} - {direction2} 방향 {time2} 버스 알람을 {minutes_before}분 전에 설정했습니다.")
             st.info(f"알람 시간: {alarm_notify_dt.strftime('%Y-%m-%d %H:%M')}")
+
+
