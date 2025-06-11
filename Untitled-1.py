@@ -23,6 +23,8 @@ def combine_datetime(time_obj, now=None):
 
     base_date = now.date()
     combined = dt.datetime.combine(base_date, time_obj)
+    kst = pytz.timezone('Asia/Seoul')
+    combined = kst.localize(combined)
     if combined <= now:
         combined += timedelta(days=1)
 
@@ -81,7 +83,7 @@ with tab2:
             st.warning("노선, 방면, 시간을 모두 선택해주세요.")
         else:
             alarm_time = parse_time_str(time2)
-            now = dt.datetime.now()
+            now = get_now_kst()
             alarm_dt = combine_datetime(alarm_time, now=now)
             alarm_notify_dt = alarm_dt - timedelta(minutes=minutes_before)
             st.success(f"{route2} - {direction2} 방향 {time2} 버스 알람을 {minutes_before}분 전에 설정했습니다.")
