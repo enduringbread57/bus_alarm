@@ -21,12 +21,17 @@ def combine_datetime(time_obj, now=None):
     if now is None:
         now = dt.datetime.now(pytz.timezone('Asia/Seoul'))
 
+    # now의 날짜와 시간 분리
     base_date = now.date()
-    combined = dt.datetime.combine(base_date, time_obj)
+    candidate_dt = dt.datetime.combine(base_date, time_obj)
     kst = pytz.timezone('Asia/Seoul')
-    combined = kst.localize(combined)
-    if combined < now:
-        combined += timedelta(days=1)
+    candidate_dt = kst.localize(candidate_dt)
+
+    # 만약 candidate_dt가 now보다 이전이면 다음날로 조정
+    if candidate_dt < now:
+        candidate_dt += timedelta(days=1)
+
+    return candidate_dt
 
     return combined
 
