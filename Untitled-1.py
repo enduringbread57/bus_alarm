@@ -4,7 +4,6 @@ import datetime as dt
 from datetime import timedelta
 import pytz
 
-# CSV 불러오기 및 전처리
 csv_path = 'timetable3.csv'
 df = pd.read_csv(csv_path)
 df = df[~df['시간'].str.match(r'^0[0-3]:\d{2}$')]
@@ -66,18 +65,16 @@ with tab1:
         if next_bus is None:
             st.warning(f"{route} - {direction} 방향의 남은 버스가 없습니다.")
         else:
-            time_diff = (next_bus - now_dt).total_seconds() / 60  # 분 단위 차이
+            time_diff = (next_bus - now_dt).total_seconds() / 60
             
             if time_diff < 10:
                 st.warning("현재 버스는 알림이 불가능합니다. 다음 버스 알림을 하시겠습니까?")
                 alarm_next = st.radio("선택하세요", ("예", "아니요"))
                 if alarm_next == "예":
-                    # 다음 버스 찾기 (현재 버스 제외하고 그 다음 버스)
                     times_str = df[(df['노선명'] == route) & (df['방면'] == direction)]['시간'].tolist()
                     times = sorted([parse_time_str(t) for t in times_str])
                     bus_datetimes = sorted([combine_datetime(t, now=now_dt) for t in times])
-                    
-                    # 현재 버스와 동일한 시간 제거 후 다음 버스 선택
+
                     next_buses = [b for b in bus_datetimes if b > next_bus]
                     if not next_buses:
                         st.warning("다음 버스가 없습니다.")
