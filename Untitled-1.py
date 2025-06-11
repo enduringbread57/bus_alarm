@@ -25,7 +25,7 @@ def combine_datetime(time_obj, now=None):
     combined = dt.datetime.combine(base_date, time_obj)
     kst = pytz.timezone('Asia/Seoul')
     combined = kst.localize(combined)
-    if combined <= now:
+    if combined < now:
         combined += timedelta(days=1)
 
     return combined
