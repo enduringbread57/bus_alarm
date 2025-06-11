@@ -58,18 +58,42 @@ with tab1:
     route = st.selectbox("노선명 선택", sorted(df['노선명'].unique()))
     directions = route_directions.get(route, [])
     direction = st.selectbox("방면 선택", directions)
+    
     if st.button("가까운 버스 찾기"):
         now_dt = get_now_kst()
         next_bus = find_next_bus(route, direction, now_dt)
+        
         if next_bus is None:
             st.warning(f"{route} - {direction} 방향의 남은 버스가 없습니다.")
         else:
-            st.success(f"가장 가까운 버스 도착시간: {next_bus.strftime('%Y-%m-%d %H:%M')}")
-            alarm = st.radio("알람을 받으시겠습니까?", ("예", "아니요"))
-            if alarm == "예":
-                alarm_notify_dt = next_bus - timedelta(minutes=10)
-                st.info(f"알람이 설정되었습니다. 알람 시간: {alarm_notify_dt.strftime('%Y-%m-%d %H:%M')} (10분 전 알림)")
-                # 실제 알람 기능 추가 가능
+            time_diff = (next_bus - now_dt).total_seconds() / 60  # 분 단위 차이
+            
+            if time_diff < 10:
+                st.warning("현재 버스는 알림이 불가능합니다. 다음 버스 알림을 하시겠습니까?")
+                alarm_next = st.radio("선택하세요", ("예", "아니요"))
+                if alarm_next == "예":
+                    # 다음 버스 찾기 (현재 버스 제외하고 그 다음 버스)
+                    times_str = df[(df['노선명'] == route) & (df['방면'] == direction)]['시간'].tolist()
+                    times = sorted([parse_time_str(t) for t in times_str])
+                    bus_datetimes = sorted([combine_datetime(t, now=now_dt) for t in times])
+                    
+                    # 현재 버스와 동일한 시간 제거 후 다음 버스 선택
+                    next_buses = [b for b in bus_datetimes if b > next_bus]
+                    if not next_buses:
+                        st.warning("다음 버스가 없습니다.")
+                    else:
+                        next_next_bus = next_buses[0]
+                        st.success(f"다음 버스 도착시간: {next_next_bus.strftime('%Y-%m-%d %H:%M')}")
+                        alarm_notify_dt = next_next_bus - timedelta(minutes=10)
+                        st.info(f"알람이 설정되었습니다. 알람 시간: {alarm_notify_dt.strftime('%Y-%m-%d %H:%M')} (10분 전 알림)")
+                else:
+                    st.info("알람 설정이 취소되었습니다.")
+            else:
+                st.success(f"가장 가까운 버스 도착시간: {next_bus.strftime('%Y-%m-%d %H:%M')}")
+                alarm = st.radio("알람을 받으시겠습니까?", ("예", "아니요"))
+                if alarm == "예":
+                    alarm_notify_dt = next_bus - timedelta(minutes=10)
+                    st.info(f"알람이 설정되었습니다. 알람 시간: {alarm_notify_dt.strftime('%Y-%m-%d %H:%M')} (10분 전 알림)")
 
 with tab2:
     st.header("2. 특정 시간대 버스 알람 설정")
